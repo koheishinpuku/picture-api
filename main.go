@@ -3,9 +3,11 @@ package main
 import (
 	// "fmt"
 
+	"fmt"
 	"net/http"
 	"os"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"local.packages/Controllers"
@@ -20,7 +22,15 @@ var secretKey string = os.Getenv("JWT_SECRET")
 
 func testget() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		return c.String(http.StatusOK, "Hello!!!!World!!!")
+		user := c.Get("rawToken").(*jwt.Token)
+		fmt.Println(user)
+		claims := user.Claims.(jwt.MapClaims)
+
+		if claims["username"] == nil {
+			return c.JSON(http.StatusUnauthorized, `"status": "USER_UNAUTHORIZED"`)
+		}
+		uname := claims["username"].(string)
+		return c.String(http.StatusOK, uname+"!! HelloWorld!!!")
 	}
 }
 
